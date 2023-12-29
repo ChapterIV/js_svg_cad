@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+</head>
+
+<body>
+    <div id="d1"></div>
+    <script src="svgs.js"></script>
+    <script>
+        initCAD({ el: 'd1', width: 1000 })
+        var b = Point(10, 20)
+        function connecter(b, width1, thickness, hole1, hole2, holeRadius) {
+            const width2 = hole1 * 2 - thickness
+            const width3 = hole2 * 2 - thickness
+            // 俯视图            
+            b.to(width1).as('l1').dim()
+                .to(0, width3).as('l3')
+                .to(-width1)
+                .to(0, -width3).dim()
+            b.clone(0, thickness)
+                .to(width1).as('l2')
+
+            b.clone(width1 / 2 + holeRadius).to(0, thickness).dash()
+            b.clone(width1 / 2 - holeRadius).to(0, thickness).dash()
+            b.clone(width1 / 2, -2).to(0, thickness + 6).dash('1 3 1')
+
+            b.clone(width1 / 2, hole2).as('hole2Center').circle(holeRadius).dim(10, 10)
+            hole2Center.clone(-holeRadius - 2).to(holeRadius * 2 + 4).dash('1 3 1').as('l4')
+            hole2Center.clone(0, -holeRadius - 2).to(0, holeRadius * 2 + 4).dash('1 3 1')
+            Dim([l3.p1, l4.p2], -5, l3.points)
+
+            // 左视图
+            b.clone(width1 + 30).as('b1')
+                .to(width2).dim(-12)
+                .to(0, thickness).dim()
+                .to(-width2 + thickness)
+                .to(0, width3 - thickness)
+                .to(-thickness)
+                .to(0, -width3)
+
+            b1.clone(hole1 + holeRadius).to(0, thickness).dash()
+            b1.clone(hole1 - holeRadius).to(0, thickness).dash()
+            b1.clone(hole1, -2).to(0, thickness + 6).dash('1 3 1')
+
+            b1.clone(0, hole2 + holeRadius).to(thickness).dash()
+            b1.clone(0, hole2 - holeRadius).to(thickness).dash()
+            b1.clone(-2, hole2).to(thickness + 6).dash('1 3 1')
+            Dim([b1, b1.clone(hole1)])
+        }
+        const width = 60
+        const thickness = 10
+        const holeRadius = 4
+        connecter(b, width, thickness, 30, 41, holeRadius)
+        connecter(b.clone(0, 100), width, thickness, 35, 45, holeRadius)
+    </script>
+</body>
+
+</html>
