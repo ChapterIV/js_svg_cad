@@ -1,3 +1,11 @@
+# Sample
+
+---
+
+![sample](./sample.jpg)
+
+---
+
 # JS SVG CAD 简单说明文档
 
 ## Point 对象方法
@@ -233,7 +241,3 @@ function Text(p1, content)
 - **返回**: 返回一个 SVG 文本对象。
 
 ---
-
-## Sample
-
-![sample](./sample.jpg)
