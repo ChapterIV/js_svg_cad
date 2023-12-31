@@ -412,12 +412,16 @@ function Line(p1, p2) {
         svg.set([np1, np2])
         return svg
     }
-    svg.dim = (d, ps1) => {
-        Dim(svg.points, d, ps1)
+    svg.dim = (d, points) => {
+        Dim(svg, { d, points })
         return svg
     }
     svg.intersect = l => CAD.getIntersectionOfLines(svg, l)
-
+    svg.move = (v, d) => {
+        svg.p1.move(v, d)
+        svg.p2.move(v, d)
+        svg.set(svg.points)
+    }
     svg.new = Line;
 
     return svg;
@@ -486,22 +490,26 @@ function CircleDimension(p1, r, x, y) {
     Text(l.p1.clone(3, -2), `Φ ${r * 2}`)
 }
 
-function MultiDimension(lines, d, ps1) {
+function MultiDimension(lines, d, points) {
     lines.forEach(line => {
-        Dim(line.points, d, ps1)
+        Dim(line.points, { d, points })
     });
 }
 
-function Dim(ps1, d = -5, ps2 = ps1) {
-    const [p1, p2] = ps1
-    const [tp1, tp2] = ps2
-
+// points: [p1,p2] or line 
+// params:{d,points}
+function Dim(points, params) {
+    const d = params?.d || -5
+    const [p1, p2] = points.type == 'line' ? points.points : points
+    let ps2 = params?.points
+    if (!ps2) { ps2 = points }
+    if (ps2.type == 'line') { ps2 = ps2.points }
+    const [rp1, rp2] = ps2
     const color = CAD.dimensionColor
-
     const mp = (d) => {
-        const rp1 = CAD.getDimensionPoint(tp1.x, tp1.y, tp2.x, tp2.y, p1.x, p1.y, d)
-        const rp2 = CAD.getDimensionPoint(tp1.x, tp1.y, tp2.x, tp2.y, p2.x, p2.y, d)
-        return [rp1, rp2]
+        const rtp1 = CAD.getDimensionPoint(rp1.x, rp1.y, rp2.x, rp2.y, p1.x, p1.y, d)
+        const rtp2 = CAD.getDimensionPoint(rp1.x, rp1.y, rp2.x, rp2.y, p2.x, p2.y, d)
+        return [rtp1, rtp2]
     }
 
     const [dp1, dp2] = mp(d)
@@ -511,8 +519,7 @@ function Dim(ps1, d = -5, ps2 = ps1) {
     Line(p1, dp1).axisMove(2).attr(color)
     Line(p2, dp2).axisMove(2).attr(color)
     var angle = CAD.getAngle(dp1.x, dp1.y, dp2.x, dp2.y)
-    Text(dp1.clone().add(dp2).multi(0.5).move(nv, 2), CAD.formatNum(l.length))
-        .rotate1(angle)
+    Text(dp1.clone().add(dp2).multi(0.5).move(nv, 2), CAD.formatNum(l.length)).rotate1(angle)
 }
 
 function Text(p1, content) {
